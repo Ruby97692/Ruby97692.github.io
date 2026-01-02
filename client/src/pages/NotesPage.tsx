@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
-import type { Note } from "@shared/schema";
+import type { Note } from "@/types/note";
+import { notes } from "@/data/content";
 import StarField from "@/components/StarField";
 import Header from "@/components/Header";
 import NoteCard from "@/components/NoteCard";
@@ -22,23 +22,27 @@ export default function NotesPage() {
     }
   }, [location]);
 
-  const { data: allNotes, isLoading } = useQuery<Note[]>({
-    queryKey: searchQuery ? ["/api/notes/search", searchQuery] : ["/api/notes"],
-    queryFn: async ({ queryKey }) => {
-      const [path, query] = queryKey;
-      const url = query ? `${path}?q=${encodeURIComponent(query as string)}` : path;
-      const res = await fetch(url as string, { credentials: "include" });
-      if (!res.ok) throw new Error(`${res.status}: ${res.statusText}`);
-      return await res.json();
-    },
-  });
+  const allNotes = notes;
+  const isLoading = false;
 
-  const categories = ["all", ...Array.from(new Set(allNotes?.map((note) => note.category) || []))];
+  const filteredBySearch = useMemo(() => {
+    if (!searchQuery.trim()) return allNotes;
+    const query = searchQuery.toLowerCase();
+    return allNotes.filter(
+      (note) =>
+        note.title.toLowerCase().includes(query) ||
+        note.content.toLowerCase().includes(query) ||
+        note.subject.toLowerCase().includes(query) ||
+        note.category.toLowerCase().includes(query)
+    );
+  }, [searchQuery, allNotes]);
 
-  const filteredNotes =
-    selectedCategory === "all"
-      ? allNotes
-      : allNotes?.filter((note) => note.category === selectedCategory);
+  const filteredNotes = useMemo(() => {
+    if (selectedCategory === "all") return filteredBySearch;
+    return filteredBySearch.filter((note) => note.category === selectedCategory);
+  }, [filteredBySearch, selectedCategory]);
+
+  const categories = ["all", ...Array.from(new Set(allNotes.map((note) => note.category)))];
   
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
@@ -63,7 +67,7 @@ export default function NotesPage() {
                   所有筆記
                 </h1>
                 <p className="text-muted-foreground" data-testid="text-all-notes-subtitle">
-                  {filteredNotes ? `共 ${filteredNotes.length} 篇筆記` : "載入中..."}
+                  {`共 ${filteredNotes.length} 篇筆記`}
                 </p>
               </div>
 
@@ -97,7 +101,7 @@ export default function NotesPage() {
                   </div>
                 ))}
               </div>
-            ) : filteredNotes && filteredNotes.length === 0 ? (
+            ) : filteredNotes.length === 0 ? (
               <div className="text-center py-16">
                 <p className="text-muted-foreground text-lg">
                   {searchQuery ? "找不到相關筆記" : "此分類尚無筆記"}
@@ -105,10 +109,11 @@ export default function NotesPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredNotes?.map((note) => (
+                {filteredNotes.map((note) => (
                   <NoteCard
                     key={note.id}
                     id={note.id}
+                    slug={note.slug}
                     title={note.title}
                     preview={note.content.substring(0, 150) + "..."}
                     subject={note.subject}

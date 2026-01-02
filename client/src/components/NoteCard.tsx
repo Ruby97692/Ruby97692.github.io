@@ -7,6 +7,7 @@ import { zhTW } from "date-fns/locale";
 
 interface NoteCardProps {
   id: string;
+  slug: string;
   title: string;
   preview: string;
   subject: string;
@@ -25,9 +26,9 @@ const categoryColors: Record<string, string> = {
   英文: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",
 };
 
-export default function NoteCard({ id, title, preview, subject, category, date }: NoteCardProps) {
+export default function NoteCard({ id, slug, title, preview, subject, category, date }: NoteCardProps) {
   return (
-    <Link href={`/note/${id}`}>
+    <Link href={`/note/${slug}`}>
       <a data-testid={`card-note-${id}`}>
         <Card className="h-full backdrop-blur-sm bg-card/60 border-border/40 hover-elevate transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 overflow-hidden">
           <CardHeader className="space-y-3 pb-4">

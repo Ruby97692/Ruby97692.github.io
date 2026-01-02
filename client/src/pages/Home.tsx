@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
 import { Link } from "wouter";
-import type { Note } from "@shared/schema";
+import type { Note } from "@/types/note";
+import { notes } from "@/data/content";
 import StarField from "@/components/StarField";
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
@@ -16,19 +16,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: notes, isLoading } = useQuery<Note[]>({
-    queryKey: searchQuery ? ["/api/notes/search", searchQuery] : ["/api/notes"],
-    queryFn: async ({ queryKey }) => {
-      const [path, query] = queryKey;
-      const url = query ? `${path}?q=${encodeURIComponent(query as string)}` : path;
-      const res = await fetch(url as string, { credentials: "include" });
-      if (!res.ok) throw new Error(`${res.status}: ${res.statusText}`);
-      return await res.json();
-    },
-    enabled: true,
-  });
+  const filteredNotes = useMemo(() => {
+    if (!searchQuery.trim()) return notes;
+    const query = searchQuery.toLowerCase();
+    return notes.filter(
+      (note) =>
+        note.title.toLowerCase().includes(query) ||
+        note.content.toLowerCase().includes(query) ||
+        note.subject.toLowerCase().includes(query) ||
+        note.category.toLowerCase().includes(query)
+    );
+  }, [searchQuery]);
 
-  const displayedNotes = notes?.slice(0, 6) || [];
+  const displayedNotes = filteredNotes.slice(0, 6);
+  const isLoading = false;
 
   return (
     <div className="min-h-screen relative">
@@ -45,7 +46,7 @@ export default function Home() {
                   {searchQuery ? "搜尋結果" : "精選筆記"}
                 </h2>
                 <p className="text-muted-foreground" data-testid="text-featured-notes-subtitle">
-                  {searchQuery ? `找到 ${notes?.length || 0} 篇筆記` : "最近的學習記錄"}
+                  {searchQuery ? `找到 ${filteredNotes.length} 篇筆記` : "最近的學習記錄"}
                 </p>
               </div>
               <SearchBar onSearch={setSearchQuery} />
@@ -72,6 +73,7 @@ export default function Home() {
                     <NoteCard
                       key={note.id}
                       id={note.id}
+                      slug={note.slug}
                       title={note.title}
                       preview={note.content.substring(0, 150) + "..."}
                       subject={note.subject}
@@ -81,7 +83,7 @@ export default function Home() {
                   ))}
                 </div>
 
-                {!searchQuery && notes && notes.length > 6 && (
+                {!searchQuery && filteredNotes.length > 6 && (
                   <div className="text-center">
                     <Link href="/notes">
                       <Button

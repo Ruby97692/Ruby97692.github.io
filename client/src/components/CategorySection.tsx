@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import type { Note } from "@shared/schema";
+import type { Note } from "@/types/note";
+import { notes } from "@/data/content";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Calculator,
@@ -48,9 +48,6 @@ const CategoryCard = ({ name, icon: Icon, count, color, onClick }: CategoryCardP
 };
 
 export default function CategorySection() {
-  const { data: notes } = useQuery<Note[]>({
-    queryKey: ["/api/notes"],
-  });
 
   const categoryIcons: Record<string, { icon: LucideIcon; color: string }> = {
     數學: { icon: Calculator, color: "bg-blue-500/20 text-blue-400" },
@@ -63,8 +60,8 @@ export default function CategorySection() {
     英文: { icon: Languages, color: "bg-indigo-500/20 text-indigo-400" },
   };
 
-  const categoryCounts = notes?.reduce(
-    (acc, note) => {
+  const categoryCounts = notes.reduce(
+    (acc: Record<string, number>, note: Note) => {
       acc[note.category] = (acc[note.category] || 0) + 1;
       return acc;
     },

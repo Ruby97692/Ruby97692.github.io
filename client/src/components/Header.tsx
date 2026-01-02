@@ -1,10 +1,8 @@
-import { Link, useLocation } from "wouter";
+import { Link } from "wouter";
 import { Sparkles, BookOpen, User, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import CreateNoteDialog from "./CreateNoteDialog";
 
 export default function Header() {
-  const [location] = useLocation();
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/40 backdrop-blur-md bg-background/80">
@@ -38,7 +36,6 @@ export default function Header() {
                 <span className="hidden sm:inline">關於我</span>
               </Button>
             </Link>
-            {(location === "/" || location === "/notes") && <CreateNoteDialog />}
           </nav>
         </div>
       </div>
