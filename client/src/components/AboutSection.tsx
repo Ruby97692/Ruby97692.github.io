@@ -15,11 +15,11 @@ export default function AboutSection() {
               <div className="flex flex-col items-center md:items-start gap-4">
                 <Avatar className="w-32 h-32 border-4 border-primary/20 shadow-lg shadow-primary/10">
                   <AvatarFallback className="text-3xl bg-gradient-to-br from-primary to-purple-600 text-primary-foreground">
-                    學
+                    聽
                   </AvatarFallback>
                 </Avatar>
                 <div className="text-center md:text-left">
-                  <h3 className="text-xl font-bold" data-testid="text-about-name">學習者</h3>
+                  <h3 className="text-xl font-bold" data-testid="text-about-name">聽風耳語</h3>
                   <p className="text-sm text-muted-foreground" data-testid="text-about-role">
                     終身學習的實踐者
                   </p>
